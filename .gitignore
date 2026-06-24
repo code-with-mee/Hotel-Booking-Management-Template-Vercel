@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+env/
+venv/
+.venv/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles_build/
+
+# Secrets / local env
+.env
+.env.*
+
+# Vercel
+.vercel
+
+# OS
+.DS_Store

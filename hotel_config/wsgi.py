@@ -14,3 +14,6 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hotel_config.settings")
 
 application = get_wsgi_application()
+
+# Vercel's Python runtime looks for a module-level `app` callable.
+app = application

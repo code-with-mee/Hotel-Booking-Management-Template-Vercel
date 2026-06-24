@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-r%gqz*9ub!bvvk_g&)9*za7mzurxta3+f+h_w^wu+y#1qi2^+t"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-r%gqz*9ub!bvvk_g&)9*za7mzurxta3+f+h_w^wu+y#1qi2^+t",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Defaults to off; enable locally with DEBUG=1.
+DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = []
+# Hosts: always allow Vercel domains and localhost; extend via ALLOWED_HOSTS env.
+ALLOWED_HOSTS = [".vercel.app", ".now.sh", "localhost", "127.0.0.1"]
+if os.environ.get("ALLOWED_HOSTS"):
+    ALLOWED_HOSTS += [h.strip() for h in os.environ["ALLOWED_HOSTS"].split(",") if h.strip()]
+if os.environ.get("VERCEL_URL"):
+    ALLOWED_HOSTS.append(os.environ["VERCEL_URL"])
+
+# CSRF: trust the deployed Vercel origin(s).
+CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app"]
+if os.environ.get("VERCEL_URL"):
+    CSRF_TRUSTED_ORIGINS.append("https://" + os.environ["VERCEL_URL"])
 
 
 # Application definition
@@ -77,13 +92,27 @@ WSGI_APPLICATION = "hotel_config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Uses DATABASE_URL / POSTGRES_URL (Supabase) in production, SQLite locally.
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+import dj_database_url  # noqa: E402
+
+_db_url = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+if _db_url:
+    _db = dj_database_url.parse(_db_url, conn_max_age=0)
+    # Supabase's pooled URL carries non-standard query params (e.g. pgbouncer,
+    # supa) that psycopg2 rejects — keep only sslmode.
+    _opts = _db.get("OPTIONS", {})
+    _db["OPTIONS"] = {"sslmode": _opts.get("sslmode", "require")}
+    # Required when connecting through the Supabase transaction pooler (pgbouncer).
+    _db["DISABLE_SERVER_SIDE_CURSORS"] = True
+    DATABASES = {"default": _db}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
 
 
 # Password validation
@@ -119,12 +148,26 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+# build_files.sh runs collectstatic into staticfiles_build/static, which Vercel
+# serves from /static/ (see vercel.json).
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles_build" / "static"
 
-# Media files (uploaded room images)
+# Media files (uploaded room images) are stored in Vercel Blob in production
+# (serverless filesystem is ephemeral); fall back to local disk for development.
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+if os.environ.get("BLOB_READ_WRITE_TOKEN"):
+    STORAGES["default"] = {"BACKEND": "hotel_config.storage.VercelBlobStorage"}
+else:
+    STORAGES["default"] = {"BACKEND": "django.core.files.storage.FileSystemStorage"}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -139,3 +182,9 @@ from django.contrib.messages import constants as message_constants  # noqa: E402
 MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
+
+# Production security: Vercel terminates TLS at the edge and forwards via proxy.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
