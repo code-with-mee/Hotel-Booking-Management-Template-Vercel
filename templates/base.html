@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Booking System</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        body {
+            background: #f5f7fb;
+            font-size: 14px;
+        }
+
+        .navbar {
+            background: #07111f !important;
+            min-height: 56px;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+        }
+
+        .brand-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #0d6efd, #0445c7);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .page-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .stat-card {
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 110px;
+        }
+
+        .stat-blue {
+            background: linear-gradient(135deg, #0d6efd, #0445c7);
+        }
+
+        .stat-yellow {
+            background: linear-gradient(135deg, #ffc107, #f59f00);
+        }
+
+        .stat-green {
+            background: linear-gradient(135deg, #198754, #0f6b3f);
+        }
+
+        .stat-purple {
+            background: linear-gradient(135deg, #6f42c1, #4c1d95);
+        }
+
+        .room-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .room-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+        }
+
+        .badge-available {
+            background: #16a34a;
+        }
+
+        .badge-pending {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .badge-confirmed {
+            background: #16a34a;
+        }
+
+        .badge-completed {
+            background: #2563eb;
+        }
+
+        .badge-cancelled {
+            background: #dc2626;
+        }
+
+        .badge-maintenance {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 6px;
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .table {
+            background: #ffffff;
+        }
+
+        .table th {
+            background: #f8fafc;
+        }
+
+        .room-placeholder {
+            height: 190px;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #0445c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 16px rgba(13,110,253,0.35);
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            flex: 0 0 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #0445c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 30px;
+            font-weight: 700;
+            box-shadow: 0 6px 16px rgba(13,110,253,0.35);
+        }
+
+        .profile-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .profile-row:last-child {
+            border-bottom: none;
+        }
+
+        .profile-row .label {
+            color: #6b7280;
+        }
+
+        .profile-row .value {
+            font-weight: 600;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+            <span class="brand-badge">HB</span>
+            Hotel Booking
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <div class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                <a class="nav-link" href="{% url 'room_list' %}">Rooms</a>
+
+                {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'booking_list' %}">My Bookings</a>
+                    <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-light ms-lg-2" type="submit">
+                            Logout
+                        </button>
+                    </form>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    <a class="btn btn-sm btn-primary ms-lg-2" href="{% url 'register' %}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 mt-4">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

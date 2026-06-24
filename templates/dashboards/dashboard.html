@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-blue">
+            <div>Total Bookings</div>
+            <h2>{{ total_bookings }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-yellow">
+            <div>Pending</div>
+            <h2>{{ pending_bookings }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-green">
+            <div>Confirmed</div>
+            <h2>{{ confirmed_bookings }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-purple">
+            <div>Total Paid</div>
+            <h2>${{ total_paid_amount }}</h2>
+        </div>
+    </div>
+</div>
+
+<h4 class="mt-5 mb-3">Recent Bookings</h4>
+
+<div class="page-card">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Room</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Status</th>
+                <th class="text-end">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in recent_bookings %}
+            <tr>
+                <td>Room {{ booking.room.room_number }}</td>
+                <td>{{ booking.check_in_date }}</td>
+                <td>{{ booking.check_out_date }}</td>
+                <td>
+                    <span class="badge badge-{{ booking.status }}">
+                        {{ booking.get_status_display }}
+                    </span>
+                </td>
+                <td class="text-end fw-semibold">${{ booking.total_price }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No bookings yet.
+                    <a href="{% url 'room_list' %}">Browse rooms</a> to make your first booking.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

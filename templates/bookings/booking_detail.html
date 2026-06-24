@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Booking Detail</h2>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="page-card h-100">
+            <h5 class="mb-3">Room {{ booking.room.room_number }}</h5>
+
+            <div class="profile-row">
+                <span class="label">Check In</span>
+                <span class="value">{{ booking.check_in_date }}</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Check Out</span>
+                <span class="value">{{ booking.check_out_date }}</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Total Price</span>
+                <span class="value text-success">${{ booking.total_price }}</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Status</span>
+                <span class="value">
+                    <span class="badge badge-{{ booking.status }}">
+                        {{ booking.get_status_display }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="page-card mb-4">
+            <h5 class="mb-3">Payment</h5>
+
+            {% if not booking.payment %}
+                <p class="text-muted">No payment has been made for this booking yet.</p>
+                <a href="{% url 'payment_create' booking.id %}" class="btn btn-success">
+                    Make Payment
+                </a>
+            {% else %}
+                <div class="profile-row">
+                    <span class="label">Status</span>
+                    <span class="value">
+                        <span class="badge bg-success">{{ booking.payment.get_payment_status_display }}</span>
+                    </span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Amount</span>
+                    <span class="value">${{ booking.payment.amount }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Method</span>
+                    <span class="value">{{ booking.payment.get_payment_method_display }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="page-card">
+            <h5 class="mb-3">Review</h5>
+
+            {% if not booking.review and booking.payment %}
+                <p class="text-muted">Tell us how your stay was.</p>
+                <a href="{% url 'review_create' booking.id %}" class="btn btn-warning">
+                    Write Review
+                </a>
+            {% elif booking.review %}
+                <div class="profile-row">
+                    <span class="label">Rating</span>
+                    <span class="value">{{ booking.review.rating }} / 5</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Comment</span>
+                    <span class="value">{{ booking.review.comment|default:"-" }}</span>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Please make payment before writing a review.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    {% if booking.status == 'pending' %}
+        <a href="{% url 'booking_cancel' booking.id %}" class="btn btn-danger">
+            Cancel Booking
+        </a>
+    {% endif %}
+
+    <a href="{% url 'booking_list' %}" class="btn btn-outline-secondary">
+        Back to Bookings
+    </a>
+</div>
+{% endblock %}

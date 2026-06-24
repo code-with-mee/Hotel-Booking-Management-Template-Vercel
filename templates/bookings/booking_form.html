@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h2 class="mb-4">Book Room {{ room.room_number }}</h2>
+
+        <div class="page-card">
+            <div class="alert alert-primary d-flex justify-content-between align-items-center mb-4">
+                <span>{{ room.room_type.name }}</span>
+                <span class="fw-bold">${{ room.room_type.price_per_night }} / night</span>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Check-in Date</label>
+                        {{ form.check_in_date }}
+                        {% if form.check_in_date.errors %}
+                        <div class="text-danger small mt-1">{{ form.check_in_date.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Check-out Date</label>
+                        {{ form.check_out_date }}
+                        {% if form.check_out_date.errors %}
+                        <div class="text-danger small mt-1">{{ form.check_out_date.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        Confirm Booking
+                    </button>
+
+                    <a href="{% url 'room_detail' room.id %}" class="btn btn-outline-secondary btn-lg">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

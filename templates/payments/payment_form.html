@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h2 class="mb-4">Make Payment</h2>
+
+        <div class="page-card">
+            <div class="alert alert-primary mb-4">
+                <div class="d-flex justify-content-between">
+                    <span>Booking</span>
+                    <span class="fw-bold">#{{ booking.id }}</span>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <span>Room</span>
+                    <span class="fw-bold">{{ booking.room.room_number }}</span>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Total Amount</span>
+                    <span class="fw-bold fs-5 text-success">${{ booking.total_price }}</span>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Payment Method</label>
+                    {{ form.payment_method }}
+                    {% if form.payment_method.errors %}
+                    <div class="text-danger small mt-1">{{ form.payment_method.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        Pay Now
+                    </button>
+
+                    <a href="{% url 'booking_detail' booking.id %}" class="btn btn-outline-secondary btn-lg">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

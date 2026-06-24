@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Rooms</h2>
+
+    <form method="get" class="d-flex gap-2">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search by room number or type..."
+            value="{{ search|default:'' }}"
+        >
+        <button class="btn btn-primary" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+
+<div class="mb-3">
+    <a href="?status=available" class="btn btn-success btn-sm">
+        Available
+    </a>
+
+    <a href="{% url 'room_list' %}" class="btn btn-outline-secondary btn-sm">
+        All
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for room in rooms %}
+    <div class="col-md-4">
+        <div class="room-card">
+            {% if room.image %}
+                <img src="{{ room.image.url }}" alt="Room {{ room.room_number }}">
+            {% else %}
+                <div class="room-placeholder">
+                    No Image
+                </div>
+            {% endif %}
+
+            <div class="p-3">
+                <h4>Room {{ room.room_number }}</h4>
+                <p>{{ room.room_type.name }}</p>
+
+                <p class="text-success fw-bold">
+                    ${{ room.room_type.price_per_night }} / night
+                </p>
+
+                <p>
+                    Status:
+                    <span class="badge badge-{{ room.status }}">
+                        {{ room.get_status_display }}
+                    </span>
+                </p>
+
+                <a href="{% url 'room_detail' room.id %}" class="btn btn-primary">
+                    View Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>No rooms found.</p>
+    {% endfor %}
+</div>
+{% endblock %}
